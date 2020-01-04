@@ -3,7 +3,7 @@ This is a private repo for multiplexing microfluidics droplet makers based on fl
 
 author: Benedikt Groever
 
-email: groever@seas.harvard.edu
+email: -
 
 1) Create an empty Anaconda enviroment
 
