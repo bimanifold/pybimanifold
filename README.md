@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/dsondak/cs207testing.svg?branch=master)](https://travis-ci.org/dsondak/cs207testing.svg?branch=master)
 
-[![Coverage Status](https://codecov.io/gh/dsondak/cs207testing/branch/master/graph/badge.svg)](https://codecov.io/gh/dsondak/cs207testing)
 
 This is a public repo for multiplexing microfluidics droplet makers based on flow flocusing. Please reach out with any questions.
 
