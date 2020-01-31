@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dsondak/cs207testing.svg?branch=master)](https://travis-ci.org/dsondak/cs207testing.svg?branch=master)
+[![Build Status](https://travis-ci.org/bimanifold/pybimanifold.svg?branch=master)](https://travis-ci.org/bimanifold/pybimanifold)
 
 
 This is a public repo for multiplexing microfluidics droplet makers based on flow flocusing. Please reach out with any questions.
@@ -16,7 +16,7 @@ conda create --name multiplex python=3.6.8 --no-default-packages
 2) Install fenics inside the empty Anaconda enviroment
 
 ```bash
-conda activate multiplex
+conda activate mult
 ```
 
 3) Install fenics inside the empty Anaconda enviroment

@@ -27,10 +27,12 @@ install:
   - conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib
   - conda install -c conda-forge pytest pytest-cov
   - conda install -c conda-forge pyyaml
+  - conda install -c conda-forge codecov
   - python setup.py install
   - pip freeze
 
 script:
-    - pytest
-#after_success:
-#    - codecov
+    - pytest --cov=./
+
+after_success:
+  - codecov
