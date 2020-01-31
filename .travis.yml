@@ -26,10 +26,11 @@ install:
   - conda activate multiplex
   - conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib
   - conda install -c conda-forge pytest pytest-cov
-  - conda install -c conda-forge yaml
+  - conda install -c conda-forge pyyaml
   - python setup.py install
+  - pip freeze
 
 script:
-    - pytest --cov=./
+    - pytest
 #after_success:
 #    - codecov
