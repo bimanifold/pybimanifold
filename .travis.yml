@@ -24,7 +24,7 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n multiplex python=$TRAVIS_PYTHON_VERSION --no-default-packages
   - conda activate multiplex
-  - conda install -c conda-forge fenics=2019.1.0 mshr=2019.1.0 matplotlib
+  - conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib
   - conda install -c conda-forge pytest pytest-cov
   - python setup.py install
 
