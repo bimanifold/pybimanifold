@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/bimanifold/pybimanifold.svg?branch=master)](https://travis-ci.org/bimanifold/pybimanifold)
-
 [![codecov.io](https://codecov.io/gh/bimanifold/pybimanifold/branch/master/graph/badge.svg)](https://codecov.io/gh/bimanifold/pybimanifold)
 
 This is a public repo for multiplexing microfluidics droplet makers based on flow flocusing. Please reach out with any questions.

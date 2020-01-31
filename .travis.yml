@@ -28,7 +28,7 @@ install:
   - conda install -c conda-forge pytest pytest-cov
   - conda install -c conda-forge pyyaml
   - conda install -c conda-forge codecov
-  #- python setup.py install
+  - python setup.py install
   - pip freeze
 
 script:
