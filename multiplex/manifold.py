@@ -1,7 +1,8 @@
 from dolfin import *
 from mshr import *
 import numpy as np
-from os.path import isfile, isdir, split
+import yaml
+from os.path import isfile, isdir, split,join
 from os import mkdir, makedirs
 from re import findall
 from multiplex.intersection_rectangular import RectangularIntersection as RI
@@ -12,54 +13,25 @@ from multiplex.meshelement import MeshElement
 
 class Manifold(MeshElement):
 
-    def __init__(self,path,name,geoparams=[],solverparams=[],gamma=0.79370052598,origin=[0,0],verbose=True):
+    def __init__(self,path,name,verbose=True):
         super().__init__()
         self.path = path
         self.name = name
         self.verbose = verbose
+        self.initialized = False
 
-        # Check if file already exists
-        new_analysis = False
-        if isfile(path+name+".txt"):
-
+        # Create path to working directory if it not exists
+        # Load data from YAML file if it exists
+        if isfile(join(self.path,self.name)+'.yaml'):
             # Read from file
             if verbose==True:
-                print(path+name+".txt"+" exits!")
-            file1 = open(path+name+".txt","r")
-            f1 = file1.readlines()
-
-            def get_number(string):
-                temp=findall(r'[+-]? *(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?', string)
-                if temp != []:
-                    temp=temp[0]
-                    temp=float(temp)
-                    if temp==int(temp):
-                        temp = int(temp)
-                    return temp
-
-            width  = get_number(f1[0])
-            d      = get_number(f1[1])
-            ddd    = get_number(f1[2])
-            layers = get_number(f1[3])
-            scale  = get_number(f1[4])
-            res    = get_number(f1[6])
-            cells  = get_number(f1[7])
-            type   = f1[8].split('\n')[0].split('\t')[-1]
-            snaps  = get_number(f1[10])
-            iter   = get_number(f1[11])
-            dt     = get_number(f1[12])
-            mu     = get_number(f1[13])
-            rho    = get_number(f1[14])
-            Re     = get_number(f1[15])
-            if(snaps < solverparams[0]):
-                snaps = solverparams[0]
-                new_analysis = True
-            solverparams = [snaps,iter,dt,mu,rho,Re]
-            geoparams    = [type,res,scale,layers,ddd,d,width]
-            self.num_cells = cells
-
+                print(join(self.path,self.name)+'.yaml exits!')
+            stream = open(join(self.path,self.name)+'.yaml', 'r')
+            self.meta_data = yaml.load(stream, Loader=yaml.FullLoader)
+            self.__initialize_domain__()
+            self.__update_meta_data_to_file__()
+            self.initialized = True
         else:
-
             if isdir(path):
                 if verbose==True:
                     print(path+" exits!")
@@ -67,15 +39,37 @@ class Manifold(MeshElement):
                 makedirs(path)
                 if verbose==True:
                     print(path+" created!")
-            [type,res,scale,layers,ddd,d,width] = geoparams
-            new_analysis = True
 
-        self.solverparams = solverparams
-        self.geoparams    = geoparams
-        [snaps,iter,dt,mu,rho,Re] = self.solverparams
-        self.type = type
-        self.resolution = res
+    def load(self,yamlFile):
+        """
+        Load meta data of manifold from YAML file.
+        """
+        if isfile(join(self.path,self.name)+'.xml'):
+            raise Exception("XML file already exits with this name in the woring directory.")
+        stream = open(yamlFile, 'r')
+        self.meta_data = yaml.load(stream, Loader=yaml.FullLoader)
+        self.__initialize_domain__()
+        self.__update_meta_data_to_file__()
+        self.initialized = True
 
+
+    def __initialize_domain__(self):
+        meta_data = self.meta_data
+        width  = meta_data['inlet_width']
+        d      = meta_data['inlet_length']
+        ddd    = meta_data['device_to_device_distance']
+        layers = meta_data['number_of_layers']
+        scale  = meta_data['scale']
+        gamma  = meta_data['gamma']
+        origin = meta_data['origin']
+        type   = meta_data['mesh_type']
+        res    = meta_data['mesh_resolution']
+        snaps  = meta_data['snaps']
+        iter   = meta_data['iterations']
+        dt     = meta_data['time_step']
+        mu     = meta_data['viscosity']
+        rho    = meta_data['mass_density']
+        Re     = meta_data['reynolds_number']
 
         # Create domain
         self.xval,self.yval,self.interlist=self.getxy(layers,ddd*scale,d*scale,width*scale,gamma,origin)
@@ -84,23 +78,38 @@ class Manifold(MeshElement):
             domain = domain + self.interlist[k].domain
 
         self.domain = domain
-        if isfile(path+name+'.xml'):
-            self.mesh = Mesh(path+name+'.xml')
-            print("Mesh loaded from file: ", path+name+'.xml')
+        if isfile(join(self.path,self.name)+'.xml'):
+            self.mesh = Mesh(join(self.path,self.name)+'.xml')
+            if self.verbose:
+                print("Mesh loaded from file: ", join(self.path,self.name)+'.xml')
         else:
-            self.generate_mesh(self.resolution)
-            File(path+name+'.xml') << self.mesh
+            self.generate_mesh(res)
+            File(join(self.path,self.name)+'.xml') << self.mesh
             if self.verbose:
                 print("Mesh newly generated!")
-            if (new_analysis==False):
-                raise Exception("MESH ERROR: could not load previous mesh")
 
-        self.v_mean = Re*mu/rho/width
-        self.inflow_profile=(str(self.v_mean*scale*3/2/(width*scale/2)**2)+'*(x[1]+'+str(width*scale/2)+')*('+str(width*scale/2)+'-x[1])', '0')
 
+    def __update_meta_data_to_file__(self):
 
         # Print data to screen
-        if verbose==True:
+        if self.verbose==True:
+            meta_data = self.meta_data
+            width  = meta_data['inlet_width']
+            d      = meta_data['inlet_length']
+            ddd    = meta_data['device_to_device_distance']
+            layers = meta_data['number_of_layers']
+            scale  = meta_data['scale']
+            gamma  = meta_data['gamma']
+            origin = meta_data['origin']
+            type   = meta_data['mesh_type']
+            res    = meta_data['mesh_resolution']
+            snaps  = meta_data['snaps']
+            iter   = meta_data['iterations']
+            dt     = meta_data['time_step']
+            mu     = meta_data['viscosity']
+            rho    = meta_data['mass_density']
+            Re     = meta_data['reynolds_number']
+
             print("")
             print("wi (m):\t\t\t",width)
             print("d (m):\t\t\t",d)
@@ -109,7 +118,6 @@ class Manifold(MeshElement):
             print("scale:\t\t\t",scale)
             print("")
             print("mesh res:\t\t",res)
-            print("num cells:\t\t",self.mesh.num_cells())
             print("type:\t\t\t",type)
             print("")
             print("num_snaps:\t\t", snaps)
@@ -118,54 +126,30 @@ class Manifold(MeshElement):
             print("mu (Pa):\t\t", mu)
             print("rho (kg/cubic meter):\t", rho)
             print("Reynolds number:\t", Re)
-            print("mean velocity (m/s):\t", self.v_mean)
-            print("")
-            print("inflow_profile:\t", self.inflow_profile)
-            print("")
 
         # Write data to file
-        if new_analysis==True:
-            file1 = open(path+name+".txt","a+")
-            file1.write("wi (m):\t\t\t"+str(width)+"\n")
-            file1.write("d (m):\t\t\t"+str(d)+"\n")
-            file1.write("ddd (m):\t\t"+str(ddd)+"\n")
-            file1.write("layers:\t\t\t"+str(layers)+"\n")
-            file1.write("scale:\t\t\t"+str(scale)+"\n")
-            file1.write("\n")
-            file1.write("mesh res:\t\t"+str(res)+"\n")
-            file1.write("num cells:\t\t"+str(self.mesh.num_cells())+"\n")
-            file1.write("type:\t\t\t"+str(type)+"\n")
-            file1.write("\n")
-            file1.write("num_snaps:\t\t"+str(snaps)+"\n")
-            file1.write("num_iter:\t\t"+str(iter)+"\n")
-            file1.write("dt (seconds):\t\t"+str(dt)+"\n")
-            file1.write("mu (Pa):\t\t"+str(mu)+"\n")
-            file1.write("rho (kg/cubic meter):\t"+str(rho)+"\n")
-            file1.write("Reynolds number:\t"+str(Re)+"\n")
-            file1.write("mean velocity (m/s):\t"+str(self.v_mean)+"\n")
-            file1.write("\n")
-            file1.write("inflow_profile:\t"+str(self.inflow_profile)+"\n")
-            file1.write("\n")
-            file1.close()
+        with open(join(self.path,self.name)+'.yaml', 'w') as file:
+            documents = yaml.dump(self.meta_data, file)
 
     def getxy(self,layers,ddd,d,width,gamma,origin=[0,0]):
         xval = [origin[0]]
         yval = [origin[1]]
         interlist = []
         ycor = 2**(layers-1)*ddd
+        mesh_type = self.meta_data['mesh_type']
 
-        if self.type=="rectangular":
+        if mesh_type=="rectangular":
             interlist.append(RI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
-        elif self.type=="triangular":
+        elif mesh_type=="triangular":
             interlist.append(TI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
-        elif self.type=="digitized":
+        elif mesh_type=="digitized":
             interlist.append(DI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
-        elif self.type=="curved":
+        elif mesh_type=="curved":
             interlist.append(CI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
         else:
             raise("Interection type not found")
 
-        def recursiveformula(n, x, y, ddd, d, width, gamma):
+        def __recursiveformula__(n, x, y, ddd, d, width, gamma):
 
             if n == layers:
                 return None
@@ -177,31 +161,31 @@ class Manifold(MeshElement):
             yval.append(y+ycor)
             yval.append(y-ycor)
 
-            if self.type=="rectangular":
+            if mesh_type=="rectangular":
                 new_inter = RI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = RI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
-            elif self.type=="triangular":
+            elif mesh_type=="triangular":
                 new_inter = TI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = TI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
-            elif self.type=="digitized":
+            elif mesh_type=="digitized":
                 new_inter = DI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = DI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
-            elif self.type=="curved":
+            elif mesh_type=="curved":
                 new_inter = CI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = CI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
 
-            recursiveformula(n+1,x+d,y+ycor, ddd, d, width*gamma, gamma)
-            recursiveformula(n+1,x+d,y-ycor, ddd, d, width*gamma, gamma)
+            __recursiveformula__(n+1,x+d,y+ycor, ddd, d, width*gamma, gamma)
+            __recursiveformula__(n+1,x+d,y-ycor, ddd, d, width*gamma, gamma)
 
-        recursiveformula(1, 0, 0, ddd, d, width*gamma, gamma)
+        __recursiveformula__(1, 0, 0, ddd, d, width*gamma, gamma)
         return np.array(xval), np.array(yval), interlist
 
     def walls(self,x):
@@ -240,13 +224,45 @@ class Manifold(MeshElement):
 
         return x, outlets
 
-    def solve(self,overwrite=False):
-        [snaps,iter,dt,mu,rho,Re]           = self.solverparams
-        [type,res,scale,layers,ddd,d,width] = self.geoparams
-        self.solver(self.path,self.name, snaps, iter, mu/scale, rho/scale**3, dt, self.inflow_profile, overwrite, verbose=self.verbose, consecutive_run_allowed=True)
+    def solve(self,snaps=None,overwrite=False):
+
+        if self.initialized == False:
+            raise RuntimeError("Manifold is not initialized!")
+
+        meta_data = self.meta_data
+        width  = float(meta_data['inlet_width'])
+        d      = float(meta_data['inlet_length'])
+        ddd    = float(meta_data['device_to_device_distance'])
+        layers = int(meta_data['number_of_layers'])
+        scale  = float(meta_data['scale'])
+        gamma  = float(meta_data['gamma'])
+        origin = meta_data['origin']
+        type   = meta_data['mesh_type']
+        res    = int(meta_data['mesh_resolution'])
+        snapsF = int(meta_data['snaps'])
+        iter   = int(meta_data['iterations'])
+        dt     = float(meta_data['time_step'])
+        mu     = float(meta_data['viscosity'])
+        rho    = float(meta_data['mass_density'])
+        Re     = float(meta_data['reynolds_number'])
+
+        if(snaps != None):
+            if(snapsF < snaps):
+                self.meta_data['snaps'] = snaps
+                self.__update_meta_data_to_file__()
+        snaps = self.meta_data['snaps']
+
+        v_mean = Re*mu/rho/width
+        inflow_profile=(str(v_mean*scale*3/2/(width*scale/2)**2)+'*(x[1]+'+str(width*scale/2)+')*('+str(width*scale/2)+'-x[1])', '0')
+
+        self.solver(self.path,self.name,snaps,iter,mu/scale,rho/scale**3,dt,inflow_profile,overwrite,verbose=self.verbose,consecutive_run_allowed=True)
 
     def hdf2pvd(self):
-        destination = self.path+self.name+'/'
+
+        if self.initialized == False:
+            raise RuntimeError("Manifold is not initialized!")
+
+        destination = join(self.path,self.name)
         source      = self.path
 
         if not isdir(destination):
@@ -257,13 +273,16 @@ class Manifold(MeshElement):
 
     def get_Q(self, series=False):
 
+        if self.initialized == False:
+            raise RuntimeError("Manifold is not initialized!")
+
         V = VectorFunctionSpace(self.mesh, 'P', 2)
         Q = FunctionSpace(self.mesh, 'P', 1)
 
         u_  = Function(V)
         p_  = Function(Q)
 
-        hdf = HDF5File(self.mesh.mpi_comm(),self.path+self.name+".h5", "r")
+        hdf = HDF5File(self.mesh.mpi_comm(),join(self.path,self.name)+'.h5', "r")
         attr = hdf.attributes("p")
         nsteps = attr['count']
 
@@ -289,13 +308,20 @@ class Manifold(MeshElement):
                     velocities.append(u(x,y))
                 velocities = np.array(velocities)
 
-                averages.append(np.trapz(velocities[:,0],-1*y_cor)/self.geoparams[2]/self.geoparams[2])
+                scale = self.meta_data['scale']
+                averages.append(np.trapz(velocities[:,0],-1*y_cor)/scale/scale)
 
             series.append(averages) #Divide by scale^2 (because of 2D)
 
         hdf.close()
-
         return np.array(series)
 
     def get_Qin(self):
-        return np.array([self.geoparams[-1]*self.v_mean])
+        if(self.initialized == False):
+            raise RuntimeError("Manifold not initialized!")
+        width           = self.meta_data['inlet_width']
+        reynolds_number = self.meta_data['reynolds_number']
+        mass_density    = self.meta_data['mass_density']
+        viscosity       = self.meta_data['viscosity']
+        v_mean = Re*mu/rho/width
+        return np.array([width*v_mean])

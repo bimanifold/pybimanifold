@@ -22,11 +22,13 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n fenics python=$TRAVIS_PYTHON_VERSION --no-default-packages
-  - conda activate fenics
+  - conda create -q -n multiplex python=$TRAVIS_PYTHON_VERSION --no-default-packages
+  - conda activate multiplex
   - conda install -c conda-forge fenics=2019.1.0 mshr=2019.1.0 matplotlib
-  #- python setup.py install
+  - conda install -c conda-forge pytest pytest-cov
+  - python setup.py install
+
 script:
     - pytest --cov=./
-after_success:
-    - codecov
+#after_success:
+#    - codecov

@@ -2,7 +2,7 @@ from dolfin import *
 from mshr import *
 import numpy as np
 import time
-from os.path import isfile
+from os.path import isfile, join
 
 class MeshElement:
 
@@ -141,12 +141,12 @@ class MeshElement:
         # Save mesh to file (for use in reaction_system.py)
         #File(path+'/channel.xml.gz') << self.mesh
         first_run = True;
-        if isfile(path+hdfFile+".h5"):
+        if isfile(join(path,hdfFile)+'.h5'):
             first_run = False;
 
         if first_run==False and overwrite==False:
             if consecutive_run_allowed==True:
-                hdf = HDF5File(self.mesh.mpi_comm(), path+hdfFile+".h5", "r")
+                hdf = HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "r")
                 attr = hdf.attributes("p")
                 dataset = "u/vector_%d"%(attr['count']-2)
                 hdf.read(u_n,dataset)
@@ -162,20 +162,20 @@ class MeshElement:
                 raise Exception("HDF file already exists")
 
         if first_run == True:
-            Hdf=HDF5File(self.mesh.mpi_comm(), path+hdfFile+".h5", "w");
+            Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "w");
             Hdf.write(self.mesh, "mesh")
             Hdf.write(u_, "u", 0)
             Hdf.write(p_, "p", 0)
             start_index = 0
         else:
-            Hdf=HDF5File(self.mesh.mpi_comm(), path+hdfFile+".h5", "a")
+            Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "a")
 
 
         # Hdf.write(mu, "mu")
         # Hdf.write(rho, "rho")
         #comm = self.mesh.mpi_comm()
         #mpiRank = MPI.rank(comm)
-        textfile = self.path+self.name+'.txt'
+        textfile = join(self.path,self.name)+'.txt'
 
         # Time-stepping
         t = start_index*num_iter*dt
@@ -238,7 +238,7 @@ class MeshElement:
         #xdmffile_u = XDMFFile('navier_stokes_cylinder/velocity.xdmf')
         #xdmffile_p = XDMFFile('navier_stokes_cylinder/pressure.xdmf')
 
-        hdf = HDF5File(self.mesh.mpi_comm(), source_path+hdfFile+".h5", "r")
+        hdf = HDF5File(self.mesh.mpi_comm(), join(source_path,hdfFile)+'.h5', "r")
         attr = hdf.attributes("p")
 
         nsteps = attr['count']
@@ -271,7 +271,7 @@ class MeshElement:
         u_  = Function(V)
         p_  = Function(Q)
 
-        hdf = HDF5File(self.mesh.mpi_comm(),self.path+self.name+".h5", "r")
+        hdf = HDF5File(self.mesh.mpi_comm(), join(self.path+self.name)+'.h5', "r")
         attr = hdf.attributes("p")
 
         if (step==None):
@@ -292,7 +292,7 @@ class MeshElement:
         u_  = Function(V)
         times = []
 
-        hdf = HDF5File(self.mesh.mpi_comm(), self.path+self.name+".h5", "r")
+        hdf = HDF5File(self.mesh.mpi_comm(), join(self.path+self.name)+'.h5', "r")
         attr = hdf.attributes("p")
 
         nsteps = attr['count']

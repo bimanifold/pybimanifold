@@ -1,0 +1,25 @@
+---
+# Manifold parametes
+inlet_width: 0.032                    # inlet width in meter
+inlet_length: 0.07                    # inlet length in meter
+device_to_device_distance: 0.05       # device to device distance in meters
+number_of_layers: 3                   # different manifold layers
+scale: 10                             # for decimeter:  scale=10,
+                                      # for centimeter: scale=100,
+                                      # for milimeter:  scale=1000,
+origin:                               # origin of the manifold (center of the inlet)
+  - 0                                 # x cordinate of origin
+  - 0                                 # y cordinate of origin
+gamma: 0.8                            # shrinking factor for each layer
+
+# Mesh parameters
+mesh_type: "rectangular"              #type of the mesh
+mesh_resolution: 10                   #resolution of the mesh
+
+# Solver parametes
+snaps: 40                             # number of snap shoots
+iterations: 50                        # number of iterations
+time_step: 1e-2                       # time step in seconds
+viscosity: 8.9e-04                    # dynamic viscosity in Pa
+mass_density: 997                     # mass density ing kg per cubic meter
+reynolds_number: 10                   # Reynolds number (dimensionless)
