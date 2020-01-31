@@ -10,6 +10,7 @@ setup(
     author_email="groever@seas.harvard.edu",
     description="A package for personal use",
     long_description=long_description,
+    include_package_data=True,
     packages=['multiplex'],#find_packages('pyautodiff'),
     classifiers=[
         "Programming Language :: Python :: 3",
