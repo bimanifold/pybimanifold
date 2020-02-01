@@ -1,6 +1,6 @@
 language: python
 python:
-    - "3.6"
+    - "3.6.8"
 #before_install:
 #    - pip install pytest pytest-cov
 #    - pip install codecov
@@ -28,11 +28,11 @@ install:
   - conda install -c conda-forge pytest pytest-cov
   - conda install -c conda-forge pyyaml
   - conda install -c conda-forge codecov
-  - python setup.py install
+  #- python setup.py install
   - pip freeze
 
 script:
-  - pytest --cov=./
+  - pytest --cov=multiplex/
 
 after_success:
   - codecov
