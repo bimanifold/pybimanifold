@@ -22,5 +22,5 @@ conda activate multiplex
 3) Install fenics inside the empty Anaconda enviroment
 
 ```bash
-conda install -c conda-forge fenics=2019.1.0 mshr=2019.1.0 matplotlib
+conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml
 ```

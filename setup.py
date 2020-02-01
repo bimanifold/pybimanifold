@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="multiplex",
-    version="0.0.1",
+    version="2020.1.0",
     author="Benedikt Groever",
     author_email="groever@seas.harvard.edu",
     description="A package for personal use",
