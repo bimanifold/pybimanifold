@@ -10,6 +10,8 @@ OS: Linux 64 (Ubuntu 18.04 recommended)
 
 ## User information
 
+0) Install [Anaconda](https://www.anaconda.com/distribution/ "Anaconda")
+
 1) Create an empty Anaconda enviroment
 
 ```bash
@@ -33,7 +35,7 @@ from multiplex import manifold as Manifold
 ```
 
 ## License
-The license of this project is GNU Lesser General Public License v3.0, which is the license of FEniCS. However, we also give permission to distribute this source code under MIT License and BSD 3-Clause License.
+The license of this project is GNU Lesser General Public License v3.0, which is the license of [FEniCS](https://fenicsproject.org/), the main dependency of this project. However, we also give permission to distribute this source code under MIT License and BSD 3-Clause License.
 
 ## Developer information
 
