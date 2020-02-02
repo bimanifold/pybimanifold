@@ -1,11 +1,14 @@
 [![Build Status](https://travis-ci.org/bimanifold/pybimanifold.svg?branch=master)](https://travis-ci.org/bimanifold/pybimanifold)
 [![codecov.io](https://codecov.io/gh/bimanifold/pybimanifold/branch/master/graph/badge.svg)](https://codecov.io/gh/bimanifold/pybimanifold)
 
-This is a public repo for multiplexing microfluidics droplet makers based on flow flocusing. Please reach out with any questions.
+# Multiplex
 
-author: Benedikt Groever
+Multiplex is a CFD simulation package
 
-email: -
+## Requirements
+OS: Linux 64 (Ubuntu 18.04 recommended)
+
+## User information
 
 1) Create an empty Anaconda enviroment
 
@@ -24,18 +27,22 @@ conda activate multiplex
 conda install -c groever -c conda-forge multiplex
 ```
 
-4) Test if the build is successful with:
+4) To test if the installation is successful, do:
 ```python
 from multiplex import manifold as Manifold
 ```
 
-Additional info:
-Run dependency can be installed with
+## License
+The license of this project is GNU Lesser General Public License v3.0, which is the license of FEniCS. However, we also give permission to distribute this source code under MIT License and BSD 3-Clause License.
+
+## Developer information
+
+Run dependency can be installed with:
 ```bash
 conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml
 ```
 
-Build dependency can be installed with
+Build dependency can be installed with:
 ```bash
 conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml pytest pytest-cov codecov
 ```
