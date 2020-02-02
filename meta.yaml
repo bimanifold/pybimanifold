@@ -12,9 +12,9 @@ source:
   git_url: https://github.com/bimanifold/pybimanifold.git
 #   git_rev: v2020.1.0
 
-#build:
-  #number: 0
-  #script: python setup.py install
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . -vv"
   #script: "conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml"
 
 requirements:
