@@ -15,16 +15,15 @@ source:
 build:
   number: 0
   script: "{{ PYTHON }} -m pip install . -vv"
-  #script: "conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml"
 
 requirements:
   build:
     - python 3.6.8
     - setuptools
-    #- fenics=2018.1.0
-    #- mshr=2018.1.0
-    #- matplotlib
-    #- pyyaml
+    - fenics=2018.1.0
+    - mshr=2018.1.0
+    - matplotlib
+    - pyyaml
   run:
     - python 3.6.8
     - fenics=2018.1.0
