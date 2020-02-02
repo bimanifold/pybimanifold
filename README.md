@@ -13,7 +13,7 @@ email: -
 conda create --name multiplex python=3.6.8 --no-default-packages
 ```
 
-2) Install fenics inside the empty Anaconda enviroment
+2) Activate Anaconda enviroment
 
 ```bash
 conda activate multiplex

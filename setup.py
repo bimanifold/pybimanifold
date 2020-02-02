@@ -11,7 +11,9 @@ setup(
     description="A package for personal use",
     long_description=long_description,
     include_package_data=True,
-    packages=['multiplex'],#find_packages('pyautodiff'),
+    #packages=['multiplex'],#find_packages('pyautodiff'),
+    packages=find_packages('multiplex'),
+    install_requires=['fenics','mshr','pyyaml','matplotlib']
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

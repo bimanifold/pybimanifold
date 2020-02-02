@@ -1,12 +1,48 @@
-package:
-  name: conda_gc_test
-  version: 1.2.1
+{% set name = "multiplex" %}
+{% set version = "2020.1.0" %}
 
-build:
-  number: 3
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+#   #url: https://github.com/simplejson/simplejson/releases/download/{{ version }}/simplejson-{{ version }}.tar.gz
+#   # and otherwise fall back to archive:
+#   #url: https://github.com/simplejson/simplejson/archive/{{ version }}.tar.gz
+  git_url: https://github.com/bimanifold/pybimanifold.git
+#   git_rev: v2020.1.0
+
+#build:
+  #number: 0
+  #script: python setup.py install
+  #script: "conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml"
 
 requirements:
+  build:
+    - python 3.6.8
+    - setuptools
+    #- fenics=2018.1.0
+    #- mshr=2018.1.0
+    #- matplotlib
+    #- pyyaml
   run:
-    - python
+    - python 3.6.8
+    - fenics=2018.1.0
+    - mshr=2018.1.0
+    - matplotlib
+    - pyyaml
+
+test:
+  imports:
+    - multiplex
+
 about:
-  summary: This is a simple meta-package
+  home: https://github.com/bimanifold/pybimanifold/
+  license: GNU Lesser General Public License v3.0
+  license_family: LGPL
+  license_file: LICENSE
+  summary: 'CFD package for multiplexing bifurcated manifolds'
+
+extra:
+  recipe-maintainers:
+    - BGroever
