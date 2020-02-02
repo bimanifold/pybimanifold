@@ -19,8 +19,23 @@ conda create --name multiplex python=3.6.8 --no-default-packages
 conda activate multiplex
 ```
 
-3) Install fenics inside the empty Anaconda enviroment
+3) You can install the package as:
+```bash
+conda install -c groever -c conda-forge multiplex
+```
 
+4) Test if the build is successful with:
+```python
+from multiplex import manifold as Manifold
+```
+
+Additional info:
+Run dependency can be installed with
 ```bash
 conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml
+```
+
+Build dependency can be installed with
+```bash
+conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml pytest pytest-cov codecov
 ```

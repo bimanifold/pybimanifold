@@ -25,3 +25,5 @@ script:
 
 after_success:
   - codecov
+
+# conda build -c conda-forge .
