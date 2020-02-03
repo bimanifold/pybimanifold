@@ -3,7 +3,7 @@
 
 # Multiplex
 
-Multiplex is a CFD simulation package
+Multiplex is a CFD simulation package. Please view the documentation [here](https://pybimanifold.readthedocs.io/en/latest/).
 
 ## Requirements
 OS: Linux 64 (Ubuntu 18.04 recommended)
