@@ -14,6 +14,8 @@ Guide:
 .. toctree::
    :maxdepth: 2
 
+   installation
+   gettingstarted
    license
    help
 
