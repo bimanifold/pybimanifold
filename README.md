@@ -3,19 +3,11 @@
 
 # Multiplex
 
-Multiplex is a CFD simulation package. Please view the documentation [here](https://pybimanifold.readthedocs.io/en/latest/).
-
-## Requirements
-OS: Linux 64 (Ubuntu 18.04 recommended)
-
-## User information
-
-0) Install [Anaconda](https://www.anaconda.com/distribution/ "Anaconda")
-
+Multiplex is a CFD simulation package to study flow uniformity in different manifold designs. You can find the documentation [here](https://pybimanifold.readthedocs.io/en/latest/).
 
 ## Developer information
 
-Run dependency can be installed with:
+Run time dependency can be installed with:
 ```bash
 conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml
 ```
