@@ -4,7 +4,7 @@ License
 Multiplex is licensed under GNU Lesser General Public License v3.0.
 This is to keep consistency with the main dependency of multiplex `FEniCS <https://fenicsproject.org/>`_.
 However, we also give permission to distribute multiplex source code under MIT License and BSD 3-Clause License.
-If you would like us to consider a different license, please reach out to multiplex@gmail.com.
+If you would like us to consider a different license, please reach out to python.multiplex@gmail.com.
 
 GNU LESSER GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
