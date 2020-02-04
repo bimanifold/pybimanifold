@@ -1,1 +1,4 @@
-This is the contents file!
+installation
+gettingstarted
+license
+help
