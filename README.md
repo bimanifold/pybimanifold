@@ -22,5 +22,5 @@ conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml
 
 Build dependency can be installed with:
 ```bash
-conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml pytest pytest-cov codecov sphinx
+conda install -c conda-forge fenics=2018.1.0 mshr=2018.1.0 matplotlib pyyaml pytest pytest-cov codecov sphinx=1.8.5
 ```

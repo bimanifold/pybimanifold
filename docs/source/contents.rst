@@ -1,4 +1,0 @@
-installation
-gettingstarted
-license
-help
