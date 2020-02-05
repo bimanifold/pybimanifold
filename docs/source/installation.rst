@@ -10,7 +10,7 @@ Anaconda is a requirement for multiplex. You can install it `here <https://www.a
 
 .. code-block:: bash
 
-   conda create --name yourenv python=3.6.8 --no-default-packages
+   conda create --name myenv python=3.6.8 --no-default-packages
 
 Python 3.6.8 is our testing version, but the code should work with any recent Python 3.x version.
 
@@ -18,7 +18,7 @@ Python 3.6.8 is our testing version, but the code should work with any recent Py
 
 .. code-block:: bash
 
-  conda activate yourenv
+  conda activate myenv
   conda install -c groever -c conda-forge multiplex
 
 3) Test if the installation was successful

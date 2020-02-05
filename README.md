@@ -3,7 +3,7 @@
 
 # Multiplex
 
-Multiplex is a CFD simulation package to study flow uniformity in different manifold designs. You can find the documentation [here](https://pybimanifold.readthedocs.io/en/latest/).
+Multiplex is a CFD simulation package to study flow uniformity in the outlet channels of different manifold designs. You can find the documentation [here](https://pybimanifold.readthedocs.io/en/latest/).
 
 ## Developer information
 
