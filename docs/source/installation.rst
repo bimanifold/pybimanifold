@@ -10,7 +10,7 @@ Anaconda is a requirement for multiplex. You can install it `here <https://www.a
 
 .. code-block:: bash
 
-   conda create --name multiplex python=3.6.8 --no-default-packages
+   conda create --name yourenv python=3.6.8 --no-default-packages
 
 Python 3.6.8 is our testing version, but the code should work with any recent Python 3.x version.
 
@@ -18,7 +18,7 @@ Python 3.6.8 is our testing version, but the code should work with any recent Py
 
 .. code-block:: bash
 
-  conda activate multiplex
+  conda activate yourenv
   conda install -c groever -c conda-forge multiplex
 
 3) Test if the installation was successful
@@ -30,5 +30,5 @@ Python 3.6.8 is our testing version, but the code should work with any recent Py
 Installation Problems? Consider Docker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`FEniCS <https://fenicsproject.org/>`_, the underlying CFD solver, of multiplex can be tricky to install depending on different OSes and Python versions. We test the successful installation of multiplex regularly on an Ubuntu 18.04 (Linux 64) operating
-system with Python 3.6.8. You can recreate our testing environment using this DockerMake file.
+`FEniCS <https://fenicsproject.org/>`_, the underlying CFD solver of multiplex, can be tricky to install depending on what OS and Python version you use. We test the successful installation of multiplex regularly on an Ubuntu 18.04 (Linux 64) operating
+system with Python 3.6.8. You can recreate our testing environment with this DockerMake file.
