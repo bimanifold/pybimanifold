@@ -1,6 +1,7 @@
 from dolfin import *
 from mshr import *
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Boundary:
     """Handels the the interstion walls, inlets and exits"""
@@ -42,8 +43,6 @@ class Boundary:
             print(point.x(), point.y())
 
     def plot(self,color=(0,0,0)):
-
-        import matplotlib.pyplot as plt
 
         """list boundary plot"""
         xval = []

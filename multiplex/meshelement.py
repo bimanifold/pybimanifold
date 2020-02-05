@@ -3,6 +3,7 @@ from mshr import *
 import numpy as np
 import time
 from os.path import isfile, join
+import matplotlib.pyplot as plt
 
 class MeshElement:
 
