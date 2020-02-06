@@ -1,6 +1,6 @@
 from dolfin import *
 from mshr import *
-from multiplex.intersection import Intersection
+from multiplex.bifurcated.intersections.base import BaseIntersection
 import numpy as np
 
 class Ellipse():
@@ -22,7 +22,7 @@ class Ellipse():
         return list(self.a*np.cos(theta)+self.x), list(self.b*np.sin(theta)+self.y)
 
 
-class CurvedIntersection(Intersection):
+class CurvedIntersection(BaseIntersection):
     """Curved Intersection"""
 
     def __init__(self, origin, li, lo, lm, wi, wo, wm):

@@ -5,13 +5,13 @@ import yaml
 from os.path import isfile, isdir, split,join
 from os import mkdir, makedirs
 from re import findall
-from multiplex.intersection_rectangular import RectangularIntersection as RI
-from multiplex.intersection_triangular import TriangularIntersection as TI
-from multiplex.intersection_digitized import DigitizedIntersection as DI
-from multiplex.intersection_curved import CurvedIntersection as CI
+from multiplex.bifurcated.intersections.rectangular import RectangularIntersection as RI
+from multiplex.bifurcated.intersections.triangular import TriangularIntersection as TI
+from multiplex.bifurcated.intersections.digitized import DigitizedIntersection as DI
+from multiplex.bifurcated.intersections.curved import CurvedIntersection as CI
 from multiplex.meshelement import MeshElement
 
-class Manifold(MeshElement):
+class BifurcatedManifold(MeshElement):
 
     def __init__(self,path,name,verbose=True):
         super().__init__()

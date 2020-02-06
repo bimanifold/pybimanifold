@@ -3,7 +3,7 @@ from mshr import *
 from multiplex.meshelement import MeshElement
 from multiplex.boundary import Boundary
 
-class Intersection(MeshElement):
+class BaseIntersection(MeshElement):
     """Intersection consists of upper, inner and lower wall, two exits and one inlet"""
 
     def __init__(self, dim):
