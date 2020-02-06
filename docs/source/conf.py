@@ -24,9 +24,9 @@ copyright = '2020, Benedikt Groever'
 author = 'Benedikt Groever'
 
 # The short X.Y version
-version = ''
+version = '2020.1.0'
 # The full version, including alpha/beta/rc tags
-release = '2020.1.0'
+release = version
 
 
 # -- General configuration ---------------------------------------------------

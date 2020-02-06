@@ -18,14 +18,14 @@ Python 3.6.8 is our testing version, but the code should work with any recent Py
 
 .. code-block:: bash
 
-  conda activate myenv
-  conda install -c groever -c conda-forge multiplex
+   conda activate myenv
+   conda install -c groever -c conda-forge multiplex
 
 3) Test if the installation was successful
 
 .. code-block:: python
 
-   from multiplex import manifold as Manifold
+   import multiplex
 
 Installation Problems? Consider Docker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
