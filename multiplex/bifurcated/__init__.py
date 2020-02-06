@@ -1,1 +1,1 @@
-import multiplex.bifurcated.intersections
+from multiplex.bifurcated.manifold import BifurcatedManifold
