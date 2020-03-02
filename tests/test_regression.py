@@ -1,4 +1,5 @@
-from multiplex.bifurcated.manifold import BifurcatedManifold
+#from multiplex import BifurcatedManifold
+import multiplex
 import numpy as np
 import os
 import shutil
@@ -9,11 +10,35 @@ class TestClass:
       if os.path.exists('test_data') and os.path.isdir('multiplex'):
           shutil.rmtree('test_data')
 
-      mymanifold = BifurcatedManifold('./test_data/test_01','check', verbose=True)
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test01', verbose=True)
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       mymanifold.solve()
       assert np.sum(mymanifold.get_Q()) - 1.0215314871585195e-05 < 1e-6
 
    def test_two(self):
-      mymanifold = BifurcatedManifold('./test_data/test_01','check', verbose=True)
-      assert np.sum(mymanifold.get_Q()) - 1.0215314871585195e-05 < 1e-6
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test02', verbose=True)
+      mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
+      mymanifold.change('mass_density',500)
+      mymanifold.solve()
+      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+
+   def test_three(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test03', verbose=True)
+      mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
+      mymanifold.change('mesh_type','digitized')
+      mymanifold.solve()
+      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+
+   def test_four(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test04', verbose=True)
+      mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
+      mymanifold.change('mesh_type','triangular')
+      mymanifold.solve()
+      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+
+   def test_five(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
+      mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
+      mymanifold.change('mesh_type','curved')
+      mymanifold.solve()
+      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6

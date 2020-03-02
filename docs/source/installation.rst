@@ -25,7 +25,7 @@ Python 3.6.8 is our testing version, but the code should work with any recent Py
 
 .. code-block:: python
 
-   import multiplex
+   >>> import multiplex
 
 Installation Problems? Consider Docker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
