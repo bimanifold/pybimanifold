@@ -42,12 +42,6 @@ class BaseIntersection(MeshElement):
         x_inner = dim[4]
         y_inner = dim[5]
 
-        if len(y_inner) != len(y_inner):
-            raise ValueError
-
-        if len(x_outer) != len(y_outer):
-            raise ValueError
-
         self.lower.add(Point(x,y-wi/2))
         for xval,yval in zip(x_outer,y_outer):
             self.lower.add(Point(x+xval,y-yval))
@@ -91,20 +85,22 @@ class BaseIntersection(MeshElement):
         if self.lower.on_boundary(point): return True
         return False
 
-    def plot(self,color=(0,0,0)):
-        self.upper.plot(color)
-        self.inner.plot(color)
-        self.lower.plot(color)
+    # Depreciated (kept for debugging purposes during development)
+    # def plot(self,color=(0,0,0)):
+    #     self.upper.plot(color)
+    #     self.inner.plot(color)
+    #     self.lower.plot(color)
 
     def vertices(self):
         vertices = [self.lower.vertices, self.inner.vertices, self.upper.vertices]
         vertices = [vertex for sublist in vertices for vertex in sublist]
         return vertices
 
-    def listall(self):
-        """list alll vertices"""
-        for point in self.vertices():
-            print(point.x(), point.y())
+    # Depreciated (kept for debugging purposes during development)
+    # def listall(self):
+    #     """list all vertices"""
+    #     for point in self.vertices():
+    #         print(point.x(), point.y())
 
     def outlets(self):
         """get the y cordinates for each outlet"""

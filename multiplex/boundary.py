@@ -34,21 +34,21 @@ class Boundary:
                     return True
         return False
 
-    def vertices(self):
-        return self.vertices
+    # def vertices(self):
+    #     return self.vertices
 
-    def listall(self):
-        """list alll vertices"""
-        for point in self.vertices:
-            print(point.x(), point.y())
+    # def listall(self):
+    #     """list alll vertices"""
+    #     for point in self.vertices:
+    #         print(point.x(), point.y())
 
-    def plot(self,color=(0,0,0)):
+    # def plot(self,color=(0,0,0)):
 
-        """list boundary plot"""
-        xval = []
-        yval = []
-        for point in self.vertices:
-            xval.append(point.x())
-            yval.append(point.y())
-        plt.plot(xval, yval, color=color)
-        plt.axis('equal')
+    #     """list boundary plot"""
+    #     xval = []
+    #     yval = []
+    #     for point in self.vertices:
+    #         xval.append(point.x())
+    #         yval.append(point.y())
+    #     plt.plot(xval, yval, color=color)
+    #     plt.axis('equal')

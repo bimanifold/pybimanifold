@@ -23,14 +23,14 @@ class MeshElement:
     def domain(self):
         return self.domain
 
-    def inflow(self, x):
-        pass
+    # def inflow(self, x):
+    #     pass
 
-    def outflow(self, x):
-        pass
+    # def outflow(self, x):
+    #     pass
 
-    def walls(self, x):
-        pass
+    # def walls(self, x):
+    #     pass
 
     def plot(self,filename="foo.pdf"):
 
@@ -53,7 +53,7 @@ class MeshElement:
             if self.walls([x,y]):   plt.plot(x,y,',', color='red')
 
         plt.axis('equal');
-        plt.savefig(filename, bbox_inches='tight')
+        plt.savefig(join(self.path,filename), bbox_inches='tight')
 
     def solver(self,path, hdfFile, num_snaps, num_iter, mu, rho, dt, inflow_profile, overwrite, verbose=True, consecutive_run_allowed=True):
 
