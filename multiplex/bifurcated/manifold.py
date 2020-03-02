@@ -111,11 +111,13 @@ class BifurcatedManifold(MeshElement):
         if isfile(join(self.path,self.name)+'.xml'):
             self.mesh = Mesh(join(self.path,self.name)+'.xml')
             if self.verbose:
+                print("")
                 print("Mesh loaded from file: ", join(self.path,self.name)+'.xml')
         else:
             self.generate_mesh(res)
             File(join(self.path,self.name)+'.xml') << self.mesh
             if self.verbose:
+                print("")
                 print("Mesh newly generated!")
 
 
