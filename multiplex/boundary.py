@@ -34,13 +34,10 @@ class Boundary:
                     return True
         return False
 
-    # def vertices(self):
-    #     return self.vertices
-
-    # def listall(self):
-    #     """list alll vertices"""
-    #     for point in self.vertices:
-    #         print(point.x(), point.y())
+    def listall(self):
+        """list all vertices"""
+        for point in self.vertices:
+            print(point.x(), point.y())
 
     # def plot(self,color=(0,0,0)):
 

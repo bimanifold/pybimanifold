@@ -17,27 +17,18 @@ class MeshElement:
 
     def mesh(self):
         if self.mesh_isgenerated == False:
-            raise("MESH IS NOT GENERATED")
+            raise Exception("MESH IS NOT GENERATED")
         return self.mesh
 
     def domain(self):
         return self.domain
-
-    # def inflow(self, x):
-    #     pass
-
-    # def outflow(self, x):
-    #     pass
-
-    # def walls(self, x):
-    #     pass
 
     def plot(self,filename="foo.pdf"):
 
         import matplotlib.pyplot as plt
 
         if self.mesh_isgenerated == False:
-            raise("MESH IS NOT GENERATED")
+            raise Exception("MESH IS NOT GENERATED")
 
         plt.figure()
 

@@ -5,8 +5,10 @@ import os
 import shutil
 import pkg_resources
 from os.path import isdir, isfile
+import pytest
 
-class TestClass:
+class TestBifurcatedManifoldClass:
+
    def test_one(self):
       if os.path.exists('test_data') and os.path.isdir('multiplex'):
           shutil.rmtree('test_data')
@@ -38,24 +40,20 @@ class TestClass:
       mymanifold.solve()
       assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
 
-   def test_five(self):
+   def test_five_one(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       mymanifold.change('mesh_type','curved')
       mymanifold.solve()
       assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+
+   def test_five_two(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
       mymanifold.hdf2pvd()
       assert isdir("./test_data/test05/")
-      mymanifold.plot()
-      assert isfile("./test_data/foo.pdf")
-
-   # def test_six(self):
-   #    mymanifold.hdf2pvd()
-   #    assert isdir("./test_data/test05/")
-   #    del mymanifold
 
 
-
-   # def test_six(self):
-   #    mymanifold.hdf2pvd()
-   #    assert isdir("./test_data/test05")
+   def test_five_three(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
+      with pytest.raises(Exception):
+         mymanifold.plot()
