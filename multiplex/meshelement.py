@@ -15,14 +15,6 @@ class MeshElement:
         self.mesh = generate_mesh(self.domain, resolution)
         self.mesh_isgenerated = True
 
-    def mesh(self):
-        if self.mesh_isgenerated == False:
-            raise Exception("MESH IS NOT GENERATED")
-        return self.mesh
-
-    def domain(self):
-        return self.domain
-
     def plot(self,filename="foo.pdf"):
 
         import matplotlib.pyplot as plt
