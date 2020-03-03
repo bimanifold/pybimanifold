@@ -49,6 +49,11 @@ class TestBifurcatedManifoldClass:
       u = mymanifold.getVelocity(10)
       assert np.mean(u(0,0)) > 0 #- 1.0215314871585195e-05 < 1e-6
 
+   def test_four_4(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test04', verbose=True)
+      u = mymanifold.getVelocity()
+      assert np.mean(u(0,0)) > 0 #- 1.0215314871585195e-05 < 1e-6
+
    def test_five_1(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
