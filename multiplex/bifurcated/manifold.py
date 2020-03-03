@@ -273,7 +273,7 @@ class BifurcatedManifold(MeshElement):
 
         return x, outlets
 
-    def solve(self,snaps=None,overwrite=False):
+    def solve(self,snaps=None):
         """
         Solving time dependent Navier Stokes equation for a given number of snap shots 
         """
@@ -307,7 +307,7 @@ class BifurcatedManifold(MeshElement):
         v_mean = Re*mu/rho/width
         inflow_profile=(str(v_mean*scale*3/2/(width*scale/2)**2)+'*(x[1]+'+str(width*scale/2)+')*('+str(width*scale/2)+'-x[1])', '0')
 
-        self.solver(self.path,self.name,snaps,iter,mu/scale,rho/scale**3,dt,inflow_profile,overwrite,verbose=self.verbose,consecutive_run_allowed=True)
+        self.solver(self.path,self.name,snaps,iter,mu/scale,rho/scale**3,dt,inflow_profile,verbose=self.verbose)
 
     def hdf2pvd(self):
         """

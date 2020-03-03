@@ -46,7 +46,7 @@ class MeshElement:
         plt.axis('equal');
         plt.savefig(join(self.path,filename), bbox_inches='tight')
 
-    def solver(self,path, hdfFile, num_snaps, num_iter, mu, rho, dt, inflow_profile, overwrite, verbose=True, consecutive_run_allowed=True):
+    def solver(self,path, hdfFile, num_snaps, num_iter, mu, rho, dt, inflow_profile, verbose=True):
 
         """it is based on https://github.com/hplgit/fenics-tutorial/blob/master/pub/python/vol1/ft08_navier_stokes_cylinder.py"""
 
@@ -136,31 +136,26 @@ class MeshElement:
         if isfile(join(path,hdfFile)+'.h5'):
             first_run = False;
 
-        if first_run==False and overwrite==False:
-            if consecutive_run_allowed==True:
-                hdf = HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "r")
-                attr = hdf.attributes("p")
-                dataset = "u/vector_%d"%(attr['count']-2)
-                hdf.read(u_n,dataset)
-                dataset = "p/vector_%d"%(attr['count']-2)
-                hdf.read(p_n,dataset)
-                dataset = "u/vector_%d"%(attr['count']-1)
-                hdf.read(u_,dataset)
-                dataset = "p/vector_%d"%(attr['count']-1)
-                start_index = attr['count']-1
-                hdf.read(p_,dataset)
-                hdf.close()
-            else:
-                raise Exception("HDF file already exists")
-
-        if first_run == True:
+        if isfile(join(path,hdfFile)+'.h5'):
+            hdf = HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "r")
+            attr = hdf.attributes("p")
+            dataset = "u/vector_%d"%(attr['count']-2)
+            hdf.read(u_n,dataset)
+            dataset = "p/vector_%d"%(attr['count']-2)
+            hdf.read(p_n,dataset)
+            dataset = "u/vector_%d"%(attr['count']-1)
+            hdf.read(u_,dataset)
+            dataset = "p/vector_%d"%(attr['count']-1)
+            start_index = attr['count']-1
+            hdf.read(p_,dataset)
+            hdf.close()
+            Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "a")
+        else:
             Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "w");
             Hdf.write(self.mesh, "mesh")
             Hdf.write(u_, "u", 0)
             Hdf.write(p_, "p", 0)
             start_index = 0
-        else:
-            Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "a")
 
 
         # Hdf.write(mu, "mu")
@@ -255,7 +250,7 @@ class MeshElement:
 
         hdf.close()
 
-    def get_u(self, step=None):
+    def getVelocity(self, step=None):
 
         V = VectorFunctionSpace(self.mesh, 'P', 2)
         Q = FunctionSpace(self.mesh, 'P', 1)
@@ -278,7 +273,7 @@ class MeshElement:
 
         return interpolate(u_, V)
 
-    def get_meta_data(self):
+    def get_time_intervals(self):
 
         V = VectorFunctionSpace(self.mesh, 'P', 2)
         u_  = Function(V)
@@ -299,4 +294,4 @@ class MeshElement:
 
         hdf.close()
 
-        return times, nsteps
+        return times
