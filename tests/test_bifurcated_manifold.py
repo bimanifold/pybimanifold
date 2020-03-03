@@ -52,17 +52,25 @@ class TestBifurcatedManifoldClass:
       mymanifold.hdf2pvd()
       assert isdir("./test_data/test05/")
 
-
    def test_five_3(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
+      assert mymanifold.get_Qin() > 0
+
+   def test_five_4(self):
+      mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
+      mymanifold.solve(50)
+      assert np.sum(mymanifold.get_Q()) > 0
+
+   ################# Exception tests #################
+
+   def test_five_5(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
       mymanifold.plot()
       assert(isfile("./test_data/foo.pdf"))
       with pytest.raises(Exception):
          mymanifold.change('inlet_width0', 5)
 
-   ## Exception tests
-
-   def test_five_4(self):
+   def test_five_6(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
       with pytest.raises(Exception):
          mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
@@ -73,6 +81,12 @@ class TestBifurcatedManifoldClass:
          mymanifold.change('inlet_width', 5)
       with pytest.raises(Exception):
          mymanifold.plot()
+      with pytest.raises(Exception):
+         mymanifold.solve()
+      with pytest.raises(Exception):
+         mymanifold.hdf2pvd()
+      with pytest.raises(Exception):
+         mymanifold.get_Q()
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       with pytest.raises(Exception):
          mymanifold.change('inlet_width0', 5)

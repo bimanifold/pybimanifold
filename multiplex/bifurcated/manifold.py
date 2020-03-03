@@ -386,5 +386,6 @@ class BifurcatedManifold(MeshElement):
         reynolds_number = self.meta_data['reynolds_number']
         mass_density    = self.meta_data['mass_density']
         viscosity       = self.meta_data['viscosity']
-        v_mean = Re*mu/rho/width
+        Re              = self.meta_data['reynolds_number']
+        v_mean = Re*viscosity/mass_density/width
         return np.array([width*v_mean])
