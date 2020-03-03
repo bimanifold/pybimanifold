@@ -8,14 +8,24 @@ import matplotlib.pyplot as plt
 class MeshElement:
 
     def __init__(self):
+        """
+        Mesh Element
+        
+        """
         self.mesh_isgenerated = False
         self.mesh = None
 
     def generate_mesh(self, resolution):
+        """
+        Generate mesh with a given resolution
+        """
         self.mesh = generate_mesh(self.domain, resolution)
         self.mesh_isgenerated = True
 
     def plot(self,filename="foo.pdf"):
+        """
+        Plot the mesh (inflow: green, outflow: blue, walls: red)
+        """
 
         import matplotlib.pyplot as plt
 
@@ -39,8 +49,10 @@ class MeshElement:
         plt.savefig(join(self.path,filename), bbox_inches='tight')
 
     def solver(self,path, hdfFile, num_snaps, num_iter, mu, rho, dt, inflow_profile, verbose=True):
-
-        """it is based on https://github.com/hplgit/fenics-tutorial/blob/master/pub/python/vol1/ft08_navier_stokes_cylinder.py"""
+        """
+        Time dependent Navier Stokes Equation
+        It is based on https://github.com/hplgit/fenics-tutorial/blob/master/pub/python/vol1/ft08_navier_stokes_cylinder.py
+        """
 
         def inflow(x):
             return self.inflow(x)
@@ -183,7 +195,7 @@ class MeshElement:
                 u_n.assign(u_)
                 p_n.assign(p_)
 
-            # Display error from master slave rank == 0
+            # Display error if required
             if verbose:
                 print('n:', n, 't:', np.round(t,3), 'u max:', u_.vector().vec().max(),'time: ',time.time()-start)
 
@@ -191,18 +203,13 @@ class MeshElement:
             file1.write('n: '+str(n)+', t: '+str(np.round(t,3))+', u max: '+str(u_.vector().vec().max())+', time: '+str(time.time()-start)+'\n')
             file1.close()
 
-
-            # PVD file
-            """https://fenicsproject.org/qa/6675/hdf-file-read-write-for-time-series/"""
-            # file_u << (u_, t)
-            # file_p << (p_, t)
             Hdf.write(u_, "u", t)
             Hdf.write(p_, "p", t)
             Hdf.flush()
 
         Hdf.close()
 
-    def hdf_to_pvd(self, destination_path, source_path, hdfFile, verbose):
+    def __hdf_to_pvd__(self, destination_path, source_path, hdfFile, verbose):
 
         # Define function spaces
         V = VectorFunctionSpace(self.mesh, 'P', 2)
@@ -213,9 +220,6 @@ class MeshElement:
 
         file_u = File(destination_path+'/velocity.pvd')
         file_p = File(destination_path+'/pressure.pvd')
-
-        #xdmffile_u = XDMFFile('navier_stokes_cylinder/velocity.xdmf')
-        #xdmffile_p = XDMFFile('navier_stokes_cylinder/pressure.xdmf')
 
         hdf = HDF5File(self.mesh.mpi_comm(), join(source_path,hdfFile)+'.h5', "r")
         attr = hdf.attributes("p")
@@ -232,8 +236,6 @@ class MeshElement:
             t = attr['timestamp']
             file_p << (p_, t)
             file_u << (u_, t)
-            #xdmffile_u.write(u_, t)
-            #xdmffile_p.write(p_, t)
 
         if verbose:
             print("")
@@ -242,7 +244,30 @@ class MeshElement:
 
         hdf.close()
 
-    def getVelocity(self, step=None):
+    def getVelocity(self, timestep=None):
+        """
+        Retrieve an interpolation function of the velocity profile
+
+        Parameter: 
+        timstep (int): Snap shot number for the velocity profile
+
+        Returns:
+        u (dolfin.function.function): Velocity profile
+
+        Example:
+
+        >>>  u = channel.getVelocity()
+        >>>  u(0,1)
+        np.array([1.354545, 0.0012])
+
+        This is the velocity vector [v_x, v_y] at point (x=0,y=1) at the final time. It is also possible to retrieve the velocity profile at a different timestep. 
+
+        >>>  u = channel.getVelocity(15)
+        >>>  u(0,1)
+        np.array([1.354545, 0.0032])
+
+        This retrieves the velocity profile at iteration timestep=15. To find the the correponding time use get_time_intervals() function.
+        """
 
         V = VectorFunctionSpace(self.mesh, 'P', 2)
         Q = FunctionSpace(self.mesh, 'P', 1)
@@ -253,12 +278,12 @@ class MeshElement:
         hdf = HDF5File(self.mesh.mpi_comm(), join(self.path+self.name)+'.h5', "r")
         attr = hdf.attributes("p")
 
-        if (step==None):
-            step = attr['count']-1
+        if (timestep==None):
+            timestep = attr['count']-1
 
-        dataset = "u/vector_%d"%step
+        dataset = "u/vector_%d"%timestep
         hdf.read(u_,dataset)
-        dataset = "p/vector_%d"%step
+        dataset = "p/vector_%d"%timestep
         hdf.read(p_,dataset)
 
         hdf.close()
@@ -266,6 +291,23 @@ class MeshElement:
         return interpolate(u_, V)
 
     def get_time_intervals(self):
+        """
+        Retrieve the time intervals of the simulation
+
+        Parameter: 
+        None
+
+        Returns:
+        times (int list): List with the time steps
+
+        Example:
+
+        >>> times = channel.get_time_intervals()
+        >>>  times
+        [1.2, 2.4, 3.6, ....]
+
+        The number of snap shots of the simulation can be obtained by len(times).
+        """
 
         V = VectorFunctionSpace(self.mesh, 'P', 2)
         u_  = Function(V)

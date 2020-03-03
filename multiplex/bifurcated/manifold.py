@@ -14,14 +14,19 @@ from multiplex.meshelement import MeshElement
 
 class BifurcatedManifold(MeshElement):
     """
-    Bifurcated Manifold class which sets up a bifurcated manifold.
-    You can initalized with:
+    Bifurcated Manifold class 
 
-        BifurcatedManifold()
-        BifurcatedManifold(path="working_directory")
-        BifurcatedManifold(name="unique_name")
-        BifurcatedManifold(path="working_directory",name="unique_name")
-        BifurcatedManifold(path="working_directory",name="unique_name",verbose=False)
+    Initialziation paramters:
+    cwd (str):       current working directory
+    name (str):      unique name of the manifold (default: "day_month_year_hour_minute_second")
+    verbose (bool):  prints information to stdout
+
+    Examples:
+        mymanifold = BifurcatedManifold()
+        mymanifold = BifurcatedManifold(cwd="working_directory")
+        mymanifold = BifurcatedManifold(cwd="unique_name")
+        mymanifold = BifurcatedManifold(cwd="working_directory",name="unique_name")
+        mymanifold = BifurcatedManifold(cwd="working_directory",name="unique_name",verbose=False)
 
     """
 
@@ -56,10 +61,23 @@ class BifurcatedManifold(MeshElement):
 
     def load(self,yamlFile):
         """
-        Load meta data of manifold from YAML file.
+        Load meta data of manifold from YAML file and creates new yaml file with name MANIFOLD_NAME.yaml.
+
+        Parameters:
+        yamlFile (str):     yaml file name / path 
+        
+        Returns:
+        None
+
+        Example:
+        mymanifold.load("sample.yaml")
+
+        Here the "sample.yaml" is inside the current working directory
         """
+
         if isfile(join(self.path,self.name)+'.xml'):
             raise Exception("XML file already exits with this name in the woring directory.")
+
         stream = open(yamlFile, 'r')
         self.meta_data = yaml.load(stream, Loader=yaml.FullLoader)
         self.__initialize_domain__()
@@ -69,8 +87,23 @@ class BifurcatedManifold(MeshElement):
 
     def change(self,item,new_value):
         """
-        Change a single item and rewrite the data to file
+        Change a meta parameter of the manifold. This function automatically updates the corresponding MANIFOLD_NAME.yaml.
+
+        Parameters:
+        item (str):             name of meta_data item to change in yaml file
+        new_value (str,int):    new value for item
+
+        Returns:
+        None
+
+        Examples:
+        mymanifold.change("inlet_width", 5)
+        mymanifold.change("mesh_type", "curved")
+
+        This changes the inlet width to 5 and the mesh type to the cuved manifold.
+
         """
+
         if self.initialized==False:
             raise Exception("Please initialize all parameters with load() before changing a parameter.")
 
@@ -227,6 +260,18 @@ class BifurcatedManifold(MeshElement):
     def walls(self,x):
         """
         Returns True if x is a point on the walls
+
+        Prameters:
+        x (dolfin.Point):   point in the x-y plane
+
+        Example:
+        >>> import dolfin
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> x = dolfin.Point(4,5)
+        >>> mymanifold.walls(x)
+        False
+
         """
         if any(inter.walls(x) == True for inter in self.interlist):
             return True
@@ -236,15 +281,37 @@ class BifurcatedManifold(MeshElement):
     def inflow(self, x):
         """
         Returns True if x is a point on the inlet
-        """
 
+        Prameters:
+        x (dolfin.Point):   point in the x-y plane
+
+        Example:
+        >>> import dolfin
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> x = dolfin.Point(4,5)
+        >>> mymanifold.walls(x)
+        False
+
+        """
         return self.interlist[0].inflow(x)
 
     def outflow(self, x):
         """
         Returns True if x is a point on the outlet
-        """
 
+        Prameters:
+        x (dolfin.Point):   point in the x-y plane
+
+        Example:
+        >>> import dolfin
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> x = dolfin.Point(4,5)
+        >>> mymanifold.walls(x)
+        False
+
+        """
         outflow_inter = []
         for inter in self.interlist:
             if inter.origin[0] == np.max(self.xval):
@@ -259,7 +326,6 @@ class BifurcatedManifold(MeshElement):
         """
         Solving time dependent Navier Stokes equation for a given number of snap shots 
         """
-
         outflow_inter = []
         for inter in self.interlist:
             if inter.origin[0] == np.max(self.xval):
@@ -275,9 +341,28 @@ class BifurcatedManifold(MeshElement):
 
     def solve(self,snaps=None):
         """
-        Solving time dependent Navier Stokes equation for a given number of snap shots 
-        """
 
+        Solving time dependent Navier Stokes equation for a given number of snap shots.
+        Creates a .h5 file with the solution in the current working directory. 
+
+        If the number of snaps is not the same as in YAML file, the higher number is chossen and the YAML file is updated.
+
+        The simulation picks up at the final snap shot number.
+
+        Parameters:
+        snaps (int):    number of snaps for the simulation to run
+
+        Returns:
+        None
+
+        Example:
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> mymanifold.change('iterations', 30)
+        >>> mymanifold.solve()                          # run snaps 0  to 30 
+        >>> mymanifold.solve(40)                        # run snaps 31 to 40 
+
+        """
         if self.initialized == False:
             raise RuntimeError("Manifold is not initialized!")
 
@@ -311,9 +396,18 @@ class BifurcatedManifold(MeshElement):
 
     def hdf2pvd(self):
         """
-        Converts HDF files in the working folder to PVD files
-        """
+        Converts HDF file in the current working directory to PVD files.
 
+        Parameters:
+        None
+
+        Returns:
+        None
+
+        Examle:
+        >>> mymanifold.hdf2pvd()
+
+        """
         if self.initialized == False or isfile(join(self.path,self.name)+".h5")==False:
             raise RuntimeError("Manifold is not initialized or .h5 file not found!")
 
@@ -323,14 +417,24 @@ class BifurcatedManifold(MeshElement):
         if not isdir(destination):
             mkdir(destination)
 
-        self.hdf_to_pvd(destination,source,self.name,verbose=self.verbose)
+        self.__hdf_to_pvd__(destination,source,self.name,verbose=self.verbose)
 
 
     def get_Q(self, series=False):
         """
-        Returns an array of the exit flow rate at each exit
-        """
+        Returns a numpy array of the exit flow rate at each exit.
 
+        Parameters:
+        series (bool):  if true return the flow rate for each snap shot
+
+        Return:
+        Q (np.array):   flow rate for each outlet
+
+        Examples:
+        >>> Qflows = mymanifold.get_Q()
+        >>> Qflows = mymanifold.get_Q(series=True)
+
+        """
         if self.initialized == False:
             raise RuntimeError("Manifold is not initialized!")
 
@@ -377,8 +481,17 @@ class BifurcatedManifold(MeshElement):
     def get_Qin(self):
         """
         Returns the inlet flow rate rate of the bifurcated manifold
-        """
 
+        Parameters:
+        None
+
+        Returns:
+        Qin (int):  inlet flow rate
+
+        Example:
+        >> Qin = mymanifold.get_Qin()
+
+        """
         if(self.initialized == False):
             raise RuntimeError("Manifold not initialized!")
 
@@ -388,4 +501,4 @@ class BifurcatedManifold(MeshElement):
         viscosity       = self.meta_data['viscosity']
         Re              = self.meta_data['reynolds_number']
         v_mean = Re*viscosity/mass_density/width
-        return np.array([width*v_mean])
+        return width*v_mean

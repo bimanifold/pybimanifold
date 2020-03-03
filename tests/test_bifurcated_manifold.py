@@ -24,42 +24,42 @@ class TestBifurcatedManifoldClass:
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       mymanifold.change('mass_density',500)
       mymanifold.solve()
-      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
-
+      assert np.sum(mymanifold.get_Q()) > 0 
+      
    def test_three(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test03', verbose=True)
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       mymanifold.change('mesh_type','digitized')
       mymanifold.solve()
-      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+      assert np.sum(mymanifold.get_Q()) > 0 
 
    def test_four_1(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test04', verbose=True)
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       mymanifold.change('mesh_type','triangular')
       mymanifold.solve()
-      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+      assert np.sum(mymanifold.get_Q()) > 0
 
    def test_four_2(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test04', verbose=True)
-      assert len(mymanifold.get_time_intervals()) > 0 #- 1.0215314871585195e-05 < 1e-6
+      assert len(mymanifold.get_time_intervals()) > 0 
 
    def test_four_3(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test04', verbose=True)
       u = mymanifold.getVelocity(10)
-      assert np.mean(u(0,0)) > 0 #- 1.0215314871585195e-05 < 1e-6
+      assert np.mean(u(0,0)) > 0 
 
    def test_four_4(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test04', verbose=True)
       u = mymanifold.getVelocity()
-      assert np.mean(u(0,0)) > 0 #- 1.0215314871585195e-05 < 1e-6
+      assert np.mean(u(0,0)) > 0 
 
    def test_five_1(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       mymanifold.change('mesh_type','curved')
       mymanifold.solve()
-      assert np.sum(mymanifold.get_Q()) > 0 #- 1.0215314871585195e-05 < 1e-6
+      assert np.sum(mymanifold.get_Q()) > 0 
 
    def test_five_2(self):
       mymanifold = multiplex.BifurcatedManifold('./test_data/','test05', verbose=True)
