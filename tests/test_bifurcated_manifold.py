@@ -87,7 +87,10 @@ class TestBifurcatedManifoldClass:
          mymanifold.hdf2pvd()
       with pytest.raises(Exception):
          mymanifold.get_Q()
+      with pytest.raises(Exception):
+         mymanifold.get_Qin()
       mymanifold.load(pkg_resources.resource_filename('multiplex','default.yaml'))
       with pytest.raises(Exception):
-         mymanifold.change('inlet_width0', 5)
+         mymanifold.change('mesh_type', 'rectangular_false')
+
    

@@ -183,7 +183,7 @@ class BifurcatedManifold(MeshElement):
         elif mesh_type=="curved":
             interlist.append(CI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
         else:
-            raise("Interection type not found")
+            raise Exception("Interection type not found")
 
         def __recursiveformula__(n, x, y, ddd, d, width, gamma):
 
@@ -314,8 +314,8 @@ class BifurcatedManifold(MeshElement):
         Converts HDF files in the working folder to PVD files
         """
 
-        if self.initialized == False:
-            raise RuntimeError("Manifold is not initialized!")
+        if self.initialized == False or isfile(join(self.path,self.name)+".h5")==False:
+            raise RuntimeError("Manifold is not initialized or .h5 file not found!")
 
         destination = join(self.path,self.name)
         source      = self.path
