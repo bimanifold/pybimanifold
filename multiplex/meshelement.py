@@ -2,31 +2,212 @@ from dolfin import *
 from mshr import *
 import numpy as np
 import time
-from os.path import isfile, join
+import yaml
+from os.path import isfile, isdir, split, join
+from os import mkdir, makedirs,getcwd, remove
+from re import findall
+from datetime import datetime
 import matplotlib.pyplot as plt
+from abc import ABCMeta, abstractmethod
 
 class MeshElement:
 
-    def __init__(self):
+    def __init__(self,cwd=getcwd(),name=datetime.now().strftime("%d_%m_%Y_%H_%M_%S"),verbose=False):
         """
         Mesh Element
-        
-        """
-        self.mesh_isgenerated = False
-        self.mesh = None
 
-    def generate_mesh(self, resolution):
         """
-        Generate mesh with a given resolution
+        self.path              = cwd
+        self.name              = name
+        self.verbose           = verbose
+        self.initialized       = False  # bool if the manifold is able to run
+        self.mesh_isgenerated  = False
+        self.mesh              = None
+        self.meta_data         = None
+
+        # Create working directory (+ path) if it not exists
+        # Load data from YAML file if it exists
+        if isfile(join(self.path,self.name)+'.yaml'):
+
+            # Read from file
+            if verbose==True:
+                print("working directory: '"+cwd+"'")
+                print(join(self.path,self.name)+'.yaml exits!')
+
+            stream = open(join(self.path,self.name)+'.yaml', 'r')
+            self.meta_data = yaml.load(stream, Loader=yaml.FullLoader)
+
+            # here, we don't change the .h5, .xml or pvd/ folder becaue data is still valid
+            self.__validate_meta_data_and_write_to_file__()
+
+        else:
+            if isdir(cwd):
+                if verbose==True:
+                    print("working directory: '"+cwd+"'")
+            else:
+                makedirs(cwd)
+                if verbose==True:
+                    print("working directory: '"+cwd+"' created!")
+
+
+
+    def load(self,yamlFile):
         """
-        self.mesh = generate_mesh(self.domain, resolution)
-        self.mesh_isgenerated = True
+        Load meta data of manifold from YAML file and creates new yaml file with name MANIFOLD_NAME.yaml.
+
+        Parameters:
+        yamlFile (str):     yaml file path / name 
+        
+        Returns:
+        None
+
+        Example:
+        mymanifold.load("sample.yaml")
+
+        Here the "sample.yaml" is inside the current working directory.
+        """
+
+        if isfile(join(self.path,self.name)+'.xml'):
+            raise Exception(".xml file already exits for this instance in current woring directory.")
+
+        if isfile(join(self.path,self.name)+'.h5'):
+            raise Exception(".h5 file already exits for this instance in current woring directory.")
+
+        if isdir(join(self.path,self.name)):
+            raise Exception("PVD folder already exits for this instance in current woring directory.")
+
+        stream = open(yamlFile, 'r')
+        self.meta_data = yaml.load(stream, Loader=yaml.FullLoader)
+
+        self.__validate_meta_data_and_write_to_file__()
+
+
+
+    def change(self,item,new_value):
+        """
+        Convinent function to change a single parameter after laoding from YAML file.
+
+        This function automatically updates the corresponding NAME.yaml file, NAME.xml file
+        and deltes the NAME.h5 file. If you only want to update the number of snap shot please refer to solve(snaps). 
+        solve(snaps) keeps the mesh file NAME.xml and data file NAME.h5 unchanged.
+
+        Parameters:
+        item (str):             name of meta_data item to change in yaml file
+        new_value (str,int):    new value for item
+
+        Returns:
+        None
+
+        Examples:
+        mymanifold.change("inlet_width", 5)
+        mymanifold.change("mesh_type", "curved")
+
+        This changes the inlet width to 5 and the mesh type to the cuved manifold.
+
+        """
+
+        if self.initialized==False:
+            raise Exception("Please initialize all parameters with load() before changing a parameter.")
+
+        if item not in self.meta_data.keys():
+            raise Exception("Item to change not found in object meta data. Please check the spelling in the YAML file")
+
+        self.meta_data[item] = new_value
+
+        # delete .h5 and .xml file and ensure that no pvd folder exists
+        if isdir(join(self.path,self.name)):
+            raise Exception("PVD folder already exits for this instance in current woring directory.")
+
+        if isfile(join(self.path,self.name)+'.xml'):
+            remove(join(self.path,self.name)+'.xml')
+
+        if isfile(join(self.path,self.name)+'.h5'):
+            remove(join(self.path,self.name)+'.h5')
+
+        self.__validate_meta_data_and_write_to_file__()
+
+
+
+    def __validate_meta_data_and_write_to_file__(self):
+
+        if 'iterations' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'iterations'")
+        if 'snaps' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'snaps'")
+        if 'mesh_resolution' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'mesh_resolution'")
+        if 'time_step' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'time_step'")
+        if 'viscosity' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'viscosity'")
+        if 'mass_density' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'mass_density'")
+        if 'reynolds_number' not in self.meta_data.keys():
+            raise Exception("YAML file needs to contain file 'reynolds_number'")
+
+        self.__initialize_domain__()
+        self.initialized = True
+
+        # Write data to file
+        with open(join(self.path,self.name)+'.yaml', 'w') as file:
+            documents = yaml.dump(self.meta_data, file)
+
+        # Print data to screen
+        if self.verbose==True:
+            snaps        = self.meta_data['snaps']
+            iterations   = self.meta_data['iterations']
+            resolution   = self.meta_data['mesh_resolution']
+            dt           = self.meta_data['time_step']
+            mu           = self.meta_data['viscosity']
+            rho          = self.meta_data['mass_density']
+            Re           = self.meta_data['reynolds_number']
+
+            print("sanps:\t\t\t\t\t", snaps)
+            print("iterations:\t\t\t\t",  iterations)
+            print("mesh_resolution:\t\t\t",resolution)
+            print("time_step (seconds):\t\t\t", dt)
+            print("viscosity (Pa):\t\t\t\t", mu)
+            print("mass density (kg/cubic meter):\t\t", rho)
+            print("Reynolds number:\t\t\t", Re)
+
+        self.__print_domain_meta_data_to_screen__()
+
+        if isfile(join(self.path,self.name)+'.xml'):
+
+            self.mesh = Mesh(join(self.path,self.name)+'.xml')
+            self.mesh_isgenerated = True;
+            if self.verbose:
+                print("")
+                print("Mesh loaded from file: ", join(self.path,self.name)+'.xml')
+
+        else:
+
+            self.mesh = generate_mesh(self.domain, resolution)
+            self.mesh_isgenerated = True
+            File(join(self.path,self.name)+'.xml') << self.mesh
+            if self.verbose:
+                print("")
+                print("Mesh newly generated!")
+
+
 
     def plot(self,filename="foo.pdf"):
         """
-        Plot the mesh (inflow: green, outflow: blue, walls: red)
-        """
+        Plot the mesh as a collection of dots.
+        Inflow dots appear in green.
+        Outlfow dots appear in blue.
+        Wall dots appear in red. 
 
+        Parameters:
+        filename (str):         filename of PDF file, will be saved in current working directory
+
+        Returns:
+        None
+
+        Example:
+        mymanifold.plot("foo.pdf")
+
+        """
         import matplotlib.pyplot as plt
 
         if self.mesh_isgenerated == False:
@@ -48,11 +229,71 @@ class MeshElement:
         plt.axis('equal');
         plt.savefig(join(self.path,filename), bbox_inches='tight')
 
-    def solver(self,path, hdfFile, num_snaps, num_iter, mu, rho, dt, inflow_profile, verbose=True):
+
+    def solve(self,snaps=None):
         """
-        Time dependent Navier Stokes Equation
-        It is based on https://github.com/hplgit/fenics-tutorial/blob/master/pub/python/vol1/ft08_navier_stokes_cylinder.py
+
+        Solving time dependent Navier Stokes equation for a given number of snap shots.
+        Creates a .h5 file with the solution in the current working directory. 
+
+        If the number of snaps is not the same as in YAML file, the higher number is chosen and the YAML file is updated.
+
+        If a prior .h5 file already exists, the simulation picks up at the final snap shot number.
+
+        Parameters:
+        snaps (int):    number of snaps for the simulation to run
+
+        Returns:
+        None
+
+        Example:
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> mymanifold.change('iterations', 30)
+        >>> mymanifold.solve()                          # run snaps 0  to 30 
+        >>> mymanifold.solve(40)                        # run snaps 31 to 40 
+
         """
+
+        #Referece: https://github.com/hplgit/fenics-tutorial/blob/master/pub/python/vol1/ft08_navier_stokes_cylinder.py
+
+        if self.initialized == False:
+            raise RuntimeError("Manifold is not initialized!")
+
+        meta_data = self.meta_data
+        width  = float(meta_data['inlet_width'])
+        d      = float(meta_data['inlet_length'])
+        ddd    = float(meta_data['device_to_device_distance'])
+        layers = int(meta_data['number_of_layers'])
+        scale  = float(meta_data['scale'])
+        gamma  = float(meta_data['gamma'])
+        origin = meta_data['origin']
+
+        mesh_type   = meta_data['mesh_type']
+        res         = int(meta_data['mesh_resolution'])
+        snapsF      = int(meta_data['snaps'])
+        num_iter    = int(meta_data['iterations'])
+        dt          = float(meta_data['time_step'])
+        mu          = float(meta_data['viscosity'])
+        rho         = float(meta_data['mass_density'])
+        Re          = float(meta_data['reynolds_number'])
+
+        if(snaps != None):
+            if(snapsF < snaps):
+                self.meta_data['snaps'] = snaps
+                # here we don't delete .h5, .xml and pvd/ folder bc data is still valid
+                self.__validate_meta_data_and_write_to_file__()
+
+        num_snaps = self.meta_data['snaps']
+
+        v_mean = Re*mu/rho/width
+        inflow_profile=(str(v_mean*scale*3/2/(width*scale/2)**2)+'*(x[1]+'+str(width*scale/2)+')*('+str(width*scale/2)+'-x[1])', '0')
+
+
+        # Rescale mu and rho 
+        mu = mu/scale
+        rho = rho/scale**3
+
 
         def inflow(x):
             return self.inflow(x)
@@ -130,18 +371,8 @@ class MeshElement:
         [bc.apply(A1) for bc in bcu]
         [bc.apply(A2) for bc in bcp]
 
-        # Create XDMF files for visualization output
-        # file_u = File(path+'/velocity.pvd')
-        # file_p = File(path+'/pressure.pvd')
-
-        # Save mesh to file (for use in reaction_system.py)
-        #File(path+'/channel.xml.gz') << self.mesh
-        first_run = True;
-        if isfile(join(path,hdfFile)+'.h5'):
-            first_run = False;
-
-        if isfile(join(path,hdfFile)+'.h5'):
-            hdf = HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "r")
+        if isfile(join(self.path,self.name)+'.h5'):
+            hdf = HDF5File(self.mesh.mpi_comm(), join(self.path,self.name)+'.h5', "r")
             attr = hdf.attributes("p")
             dataset = "u/vector_%d"%(attr['count']-2)
             hdf.read(u_n,dataset)
@@ -153,19 +384,14 @@ class MeshElement:
             start_index = attr['count']-1
             hdf.read(p_,dataset)
             hdf.close()
-            Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "a")
+            Hdf=HDF5File(self.mesh.mpi_comm(), join(self.path,self.name)+'.h5', "a")
         else:
-            Hdf=HDF5File(self.mesh.mpi_comm(), join(path,hdfFile)+'.h5', "w");
+            Hdf=HDF5File(self.mesh.mpi_comm(), join(self.path,self.name)+'.h5', "w");
             Hdf.write(self.mesh, "mesh")
             Hdf.write(u_, "u", 0)
             Hdf.write(p_, "p", 0)
             start_index = 0
 
-
-        # Hdf.write(mu, "mu")
-        # Hdf.write(rho, "rho")
-        #comm = self.mesh.mpi_comm()
-        #mpiRank = MPI.rank(comm)
         textfile = join(self.path,self.name)+'.txt'
 
         # Time-stepping
@@ -196,7 +422,7 @@ class MeshElement:
                 p_n.assign(p_)
 
             # Display error if required
-            if verbose:
+            if self.verbose:
                 print('n:', n, 't:', np.round(t,3), 'u max:', u_.vector().vec().max(),'time: ',time.time()-start)
 
             file1 = open(textfile,"a+")
@@ -209,7 +435,28 @@ class MeshElement:
 
         Hdf.close()
 
-    def __hdf_to_pvd__(self, destination_path, source_path, hdfFile, verbose):
+    def hdf2pvd(self):
+        """
+        Converts HDF file in the current working directory to PVD files.
+
+        Parameters:
+        None
+
+        Returns:
+        None
+
+        Examle:
+        >>> mymanifold.hdf2pvd()
+
+        """
+        if self.initialized == False or isfile(join(self.path,self.name)+".h5")==False:
+            raise RuntimeError("Manifold is not initialized or .h5 file not found!")
+
+        destination = join(self.path,self.name)
+        source      = self.path
+
+        if not isdir(destination):
+            mkdir(destination)
 
         # Define function spaces
         V = VectorFunctionSpace(self.mesh, 'P', 2)
@@ -218,10 +465,10 @@ class MeshElement:
         u_  = Function(V)
         p_  = Function(Q)
 
-        file_u = File(destination_path+'/velocity.pvd')
-        file_p = File(destination_path+'/pressure.pvd')
+        file_u = File(destination+'/velocity.pvd')
+        file_p = File(destination+'/pressure.pvd')
 
-        hdf = HDF5File(self.mesh.mpi_comm(), join(source_path,hdfFile)+'.h5', "r")
+        hdf = HDF5File(self.mesh.mpi_comm(), join(source,self.name)+'.h5', "r")
         attr = hdf.attributes("p")
 
         nsteps = attr['count']
@@ -237,7 +484,7 @@ class MeshElement:
             file_p << (p_, t)
             file_u << (u_, t)
 
-        if verbose:
+        if self.verbose:
             print("")
             print("Success HDF to PVD")
             print("")
