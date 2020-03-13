@@ -8,7 +8,7 @@ from os import mkdir, makedirs,getcwd, remove
 from re import findall
 from datetime import datetime
 import matplotlib.pyplot as plt
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 class MeshElement:
 
@@ -99,8 +99,8 @@ class MeshElement:
         None
 
         Examples:
-        mymanifold.change("inlet_width", 5)
-        mymanifold.change("mesh_type", "curved")
+        mymanifold.change("time_step (s)", 0.002)
+        mymanifold.change("reynolds_number", 20)
 
         This changes the inlet width to 5 and the mesh type to the cuved manifold.
 
@@ -130,20 +130,19 @@ class MeshElement:
 
     def __validate_meta_data_and_write_to_file__(self):
 
-        if 'iterations' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'iterations'")
-        if 'snaps' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'snaps'")
-        if 'mesh_resolution' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'mesh_resolution'")
-        if 'time_step' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'time_step'")
-        if 'viscosity' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'viscosity'")
-        if 'mass_density' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'mass_density'")
-        if 'reynolds_number' not in self.meta_data.keys():
-            raise Exception("YAML file needs to contain file 'reynolds_number'")
+        solver_keys = [ 'snaps',
+                        'iterations',
+                        'mesh_resolution',
+                        'time_step (s)',
+                        'viscosity (Pa)',
+                        'mass_density (kg/cubic meter)',
+                        'inlet_width (m)',
+                        'reynolds_number',
+                        'mesh_resolution']
+
+        for key in solver_keys:
+            if key not in self.meta_data.keys():
+                raise Exception("YAML file need to contain '{}'".format(key))
 
         self.__initialize_domain__()
         self.initialized = True
@@ -154,23 +153,18 @@ class MeshElement:
 
         # Print data to screen
         if self.verbose==True:
-            snaps        = self.meta_data['snaps']
-            iterations   = self.meta_data['iterations']
-            resolution   = self.meta_data['mesh_resolution']
-            dt           = self.meta_data['time_step']
-            mu           = self.meta_data['viscosity']
-            rho          = self.meta_data['mass_density']
-            Re           = self.meta_data['reynolds_number']
 
-            print("sanps:\t\t\t\t\t", snaps)
-            print("iterations:\t\t\t\t",  iterations)
-            print("mesh_resolution:\t\t\t",resolution)
-            print("time_step (seconds):\t\t\t", dt)
-            print("viscosity (Pa):\t\t\t\t", mu)
-            print("mass density (kg/cubic meter):\t\t", rho)
-            print("Reynolds number:\t\t\t", Re)
+            print("")
+            for key, value in self.meta_data.items():
+                if key in solver_keys:
+                    print("{:<40} {:<20}".format(key, str(value)))
 
-        self.__print_domain_meta_data_to_screen__()
+            print("")
+            for key, value in self.meta_data.items():
+                if key not in solver_keys:
+                    print("{:<40} {:<20}".format(key, str(value)))
+            print("")
+
 
         if isfile(join(self.path,self.name)+'.xml'):
 
@@ -182,13 +176,77 @@ class MeshElement:
 
         else:
 
-            self.mesh = generate_mesh(self.domain, resolution)
+            self.mesh = generate_mesh(self.domain, self.meta_data['mesh_resolution'])
             self.mesh_isgenerated = True
             File(join(self.path,self.name)+'.xml') << self.mesh
             if self.verbose:
                 print("")
                 print("Mesh newly generated!")
 
+    @abstractmethod
+    def __initialize_domain__(self):
+        """ 
+        This function must not be called by user API. Any class deriving from multiplex.meshelement needs to 
+        overwrite it as it geometry specific.
+        """
+        pass
+
+    @abstractmethod
+    def walls(self,x):
+        """
+        Returns True if x is a point on the walls
+
+        Prameters:
+        x (dolfin.Point):   point in the x-y plane
+
+        Example:
+        >>> import dolfin
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> x = dolfin.Point(4,5)
+        >>> mymanifold.walls(x)
+        False
+
+        """
+        pass
+
+    @abstractmethod
+    def inflow(self, x):
+        """
+        Returns True if x is a point on the inlet
+
+        Prameters:
+        x (dolfin.Point):   point in the x-y plane
+
+        Example:
+        >>> import dolfin
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> x = dolfin.Point(4,5)
+        >>> mymanifold.inflow(x)
+        False
+
+        """
+        pass
+
+    @abstractmethod
+    def outflow(self, x):
+        """
+        Returns True if x is a point on the outlet
+
+        Prameters:
+        x (dolfin.Point):   point in the x-y plane
+
+        Example:
+        >>> import dolfin
+        >>> mymanifold.BifurcatedManifold()
+        >>> mymanifold.load("sample.yaml")
+        >>> x = dolfin.Point(4,5)
+        >>> mymanifold.outlfow(x)
+        False
+
+        """
+        pass
 
 
     def plot(self,filename="foo.pdf"):
@@ -260,28 +318,19 @@ class MeshElement:
         if self.initialized == False:
             raise RuntimeError("Manifold is not initialized!")
 
-        meta_data = self.meta_data
-        width  = float(meta_data['inlet_width'])
-        d      = float(meta_data['inlet_length'])
-        ddd    = float(meta_data['device_to_device_distance'])
-        layers = int(meta_data['number_of_layers'])
-        scale  = float(meta_data['scale'])
-        gamma  = float(meta_data['gamma'])
-        origin = meta_data['origin']
-
-        mesh_type   = meta_data['mesh_type']
-        res         = int(meta_data['mesh_resolution'])
-        snapsF      = int(meta_data['snaps'])
-        num_iter    = int(meta_data['iterations'])
-        dt          = float(meta_data['time_step'])
-        mu          = float(meta_data['viscosity'])
-        rho         = float(meta_data['mass_density'])
-        Re          = float(meta_data['reynolds_number'])
+        snapsF      = int(self.meta_data['snaps'])
+        num_iter    = int(self.meta_data['iterations'])
+        dt          = float(self.meta_data['time_step (s)'])
+        mu          = float(self.meta_data['viscosity (Pa)'])
+        width       = float(self.meta_data['inlet_width (m)'])
+        rho         = float(self.meta_data['mass_density (kg/cubic meter)'])
+        Re          = float(self.meta_data['reynolds_number'])
+        res         = int(self.meta_data['mesh_resolution'])
+        scale       = float(self.meta_data['scale'])
 
         if(snaps != None):
             if(snapsF < snaps):
                 self.meta_data['snaps'] = snaps
-                # here we don't delete .h5, .xml and pvd/ folder bc data is still valid
                 self.__validate_meta_data_and_write_to_file__()
 
         num_snaps = self.meta_data['snaps']
@@ -576,3 +625,29 @@ class MeshElement:
         hdf.close()
 
         return times
+
+    def get_Qin(self):
+        """
+        Returns the inlet flow rate rate of the bifurcated manifold
+
+        Parameters:
+        None
+
+        Returns:
+        Qin (int):  inlet flow rate
+
+        Example:
+        >> Qin = mymanifold.get_Qin()
+
+        """
+        if(self.initialized == False):
+            raise RuntimeError("Manifold not initialized!")
+
+        width           = self.meta_data['inlet_width (m)']
+        reynolds_number = self.meta_data['reynolds_number']
+        mass_density    = self.meta_data['mass_density (kg/cubic meter)']
+        viscosity       = self.meta_data['viscosity (Pa)']
+        Re              = self.meta_data['reynolds_number']
+        
+        v_mean = Re*viscosity/mass_density/width
+        return width*v_mean

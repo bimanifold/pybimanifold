@@ -24,30 +24,33 @@ class BifurcatedManifold(MeshElement):
     Examples:
         mymanifold = BifurcatedManifold()
         mymanifold = BifurcatedManifold(cwd="working_directory")
-        mymanifold = BifurcatedManifold(cwd="unique_name")
+        mymanifold = BifurcatedManifold(name="unique_name")
         mymanifold = BifurcatedManifold(cwd="working_directory",name="unique_name")
         mymanifold = BifurcatedManifold(cwd="working_directory",name="unique_name",verbose=False)
 
+    This load data from unique_name.yaml if it exists.
+
     """
 
-    def __init__(self,cwd,name=datetime.now().strftime("%d_%m_%Y_%H_%M_%S"),verbose=False):
-        super().__init__(cwd=cwd,name=name,verbose=verbose)
+    def __init__(self,cwd=getcwd(),name=datetime.now().strftime("%d_%m_%Y_%H_%M_%S"),verbose=False):
+        super().__init__(cwd,name,verbose)
 
 
     def __initialize_domain__(self):
+        # Overwrite __initialize_domain__ from multiplex.meshelement
 
-        width        = self.meta_data['inlet_width']
-        d            = self.meta_data['inlet_length']
-        ddd          = self.meta_data['device_to_device_distance']
+        width        = self.meta_data['inlet_width (m)']
+        length       = self.meta_data['inlet_length (m)']
+        ddd          = self.meta_data['device_to_device_distance (m)']
         layers       = self.meta_data['number_of_layers']
         scale        = self.meta_data['scale']
         gamma        = self.meta_data['gamma']
         origin       = self.meta_data['origin']
-        mtype        = self.meta_data['mesh_type']
+        mtype        = self.meta_data['manifold_type']
         res          = self.meta_data['mesh_resolution']
 
         # Create domain
-        self.xval,self.yval,self.interlist=self.__getxy__(layers,ddd*scale,d*scale,width*scale,gamma,origin)
+        self.xval,self.yval,self.interlist=self.__getxy__(layers,ddd*scale,length*scale,width*scale,gamma,origin)
         domain = self.interlist[0].domain
         for k in range(1, len(self.interlist)):
             domain = domain + self.interlist[k].domain
@@ -55,45 +58,21 @@ class BifurcatedManifold(MeshElement):
         self.domain = domain
 
 
-    def __print_domain_meta_data_to_screen__(self):
-
-        # Print data to screen
-        if self.verbose==True:
-            width        = self.meta_data['inlet_width']
-            d            = self.meta_data['inlet_length']
-            ddd          = self.meta_data['device_to_device_distance']
-            layers       = self.meta_data['number_of_layers']
-            scale        = self.meta_data['scale']
-            gamma        = self.meta_data['gamma']
-            origin       = self.meta_data['origin']
-            mtype        = self.meta_data['mesh_type']
-
-            print("")
-            print("inlet_width (m):\t\t\t",width)
-            print("inlet_length (m):\t\t\t",d)
-            print("device_to_device_distance (m):\t\t",ddd)
-            print("layers:\t\t\t\t\t",layers)
-            print("scale: \t\t\t\t\t",scale)
-            print("origin:\t\t\t\t\t", origin)
-            print("gamma:\t\t\t\t\t", gamma)
-            print("mesh_type:\t\t\t\t",mtype)
-            print("")
-
-
     def __getxy__(self,layers,ddd,d,width,gamma,origin=[0,0]):
+
         xval = [origin[0]]
         yval = [origin[1]]
         interlist = []
         ycor = 2**(layers-1)*ddd
-        mesh_type = self.meta_data['mesh_type']
+        manifold_type = self.meta_data['manifold_type']
 
-        if mesh_type=="rectangular":
+        if manifold_type=="rectangular":
             interlist.append(RI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
-        elif mesh_type=="triangular":
+        elif manifold_type=="triangular":
             interlist.append(TI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
-        elif mesh_type=="digitized":
+        elif manifold_type=="digitized":
             interlist.append(DI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
-        elif mesh_type=="curved":
+        elif manifold_type=="curved":
             interlist.append(CI([0,0],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma))
         else:
             raise Exception("Interection type not found")
@@ -110,22 +89,22 @@ class BifurcatedManifold(MeshElement):
             yval.append(y+ycor)
             yval.append(y-ycor)
 
-            if mesh_type=="rectangular":
+            if manifold_type=="rectangular":
                 new_inter = RI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = RI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
-            elif mesh_type=="triangular":
+            elif manifold_type=="triangular":
                 new_inter = TI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = TI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
-            elif mesh_type=="digitized":
+            elif manifold_type=="digitized":
                 new_inter = DI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = DI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
-            elif mesh_type=="curved":
+            elif manifold_type=="curved":
                 new_inter = CI([x+d,y+ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
                 interlist.append(new_inter)
                 new_inter = CI([x+d,y-ycor],li=d/2,lo=d/2,lm=ycor+width*gamma,wi=width,wo=width*gamma,wm=width*gamma)
@@ -139,64 +118,18 @@ class BifurcatedManifold(MeshElement):
 
 
     def walls(self,x):
-        """
-        Returns True if x is a point on the walls
-
-        Prameters:
-        x (dolfin.Point):   point in the x-y plane
-
-        Example:
-        >>> import dolfin
-        >>> mymanifold.BifurcatedManifold()
-        >>> mymanifold.load("sample.yaml")
-        >>> x = dolfin.Point(4,5)
-        >>> mymanifold.walls(x)
-        False
-
-        """
-
+        # Overwrite walls from multiplex.meshelement
         if any(inter.walls(x) == True for inter in self.interlist):
             return True
         else:
             return False
 
-
     def inflow(self, x):
-        """
-        Returns True if x is a point on the inlet
-
-        Prameters:
-        x (dolfin.Point):   point in the x-y plane
-
-        Example:
-        >>> import dolfin
-        >>> mymanifold.BifurcatedManifold()
-        >>> mymanifold.load("sample.yaml")
-        >>> x = dolfin.Point(4,5)
-        >>> mymanifold.walls(x)
-        False
-
-        """
-
+        # Overwrite inflow from multiplex.meshelement
         return self.interlist[0].inflow(x)
 
     def outflow(self, x):
-        """
-        Returns True if x is a point on the outlet
-
-        Prameters:
-        x (dolfin.Point):   point in the x-y plane
-
-        Example:
-        >>> import dolfin
-        >>> mymanifold.BifurcatedManifold()
-        >>> mymanifold.load("sample.yaml")
-        >>> x = dolfin.Point(4,5)
-        >>> mymanifold.walls(x)
-        False
-
-        """
-
+        # Overwrite outlfow from multiplex.meshelement
         outflow_inter = []
         for inter in self.interlist:
             if inter.origin[0] == np.max(self.xval):
@@ -207,12 +140,21 @@ class BifurcatedManifold(MeshElement):
         else:
             return False
 
-
     def outlets(self):
         """
-        Solving time dependent Navier Stokes equation for a given number of snap shots 
-        """
+        Returning the outlet cordinates.
 
+        Parameters:
+        None
+
+        Return:
+        x (int):        x value of the outlets
+        y (np.array)    y values of the outlets 
+
+        Examples:
+        >>> x, y_values = mymanifold.outlets()
+        
+        """
         outflow_inter = []
         for inter in self.interlist:
             if inter.origin[0] == np.max(self.xval):
@@ -242,7 +184,6 @@ class BifurcatedManifold(MeshElement):
         >>> Qflows = mymanifold.get_Q(series=True)
 
         """
-
         if self.initialized == False:
             raise RuntimeError("Manifold is not initialized!")
 
@@ -279,37 +220,9 @@ class BifurcatedManifold(MeshElement):
                 velocities = np.array(velocities)
 
                 scale = self.meta_data['scale']
-                averages.append(np.trapz(velocities[:,0],-1*y_cor)/scale/scale) #Divide by scale^2 (because of 2D)
+                averages.append(np.trapz(velocities[:,0],-1*y_cor)/scale/scale)
 
-            series.append(averages) 
+            series.append(averages) #Divide by scale^2 (because of 2D)
 
         hdf.close()
         return np.array(series)
-
-
-
-    def get_Qin(self):
-        """
-        Returns the inlet flow rate rate of the bifurcated manifold
-
-        Parameters:
-        None
-
-        Returns:
-        Qin (int):  inlet flow rate
-
-        Example:
-        >> Qin = mymanifold.get_Qin()
-
-        """
-        
-        if(self.initialized == False):
-            raise RuntimeError("Manifold not initialized!")
-
-        width           = self.meta_data['inlet_width']
-        reynolds_number = self.meta_data['reynolds_number']
-        mass_density    = self.meta_data['mass_density']
-        viscosity       = self.meta_data['viscosity']
-        Re              = self.meta_data['reynolds_number']
-        v_mean = Re*viscosity/mass_density/width
-        return width*v_mean
